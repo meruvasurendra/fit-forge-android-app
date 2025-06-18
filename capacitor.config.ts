@@ -2,7 +2,7 @@
 import { CapacitorConfig } from '@capacitor/core';
 
 const config: CapacitorConfig = {
-  appId: 'com.fittrack.app',
+  appId: 'app.lovable.18114213079542133a71a3b6f5e070875',
   appName: 'FitTrack - Fitness Tracker',
   webDir: 'dist',
   server: {
