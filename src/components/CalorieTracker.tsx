@@ -13,13 +13,14 @@ const CalorieTracker = ({ user }) => {
   const [todayMacros, setTodayMacros] = useState({ protein: 0, carbs: 0, fats: 0 });
   const [foodEntries, setFoodEntries] = useState([]);
   const [newFood, setNewFood] = useState({ name: "", calories: "", protein: "", carbs: "", fats: "" });
-  const [foodWeight, setFoodWeight] = useState("");
+  const [foodQuantity, setFoodQuantity] = useState("");
+  const [quantityType, setQuantityType] = useState("weight"); // "weight" or "count"
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const { toast } = useToast();
 
   const calorieGoal = 2000;
-  const macroGoals = { protein: 150, carbs: 250, fats: 67 }; // Example goals
+  const macroGoals = { protein: 150, carbs: 250, fats: 67 };
 
   useEffect(() => {
     const saved = localStorage.getItem("todayCalories");
@@ -72,37 +73,72 @@ const CalorieTracker = ({ user }) => {
   };
 
   const calculateMacrosFromName = () => {
-    if (!newFood.name || !foodWeight) {
+    if (!newFood.name || !foodQuantity) {
       toast({
-        title: "Please enter food name and weight",
+        title: "Please enter food name and quantity",
         variant: "destructive",
       });
       return;
     }
 
-    // Mock macro calculation - in real app, this would use a food database API
+    // Enhanced food database with count-based items
     const mockNutrition = {
-      "chicken breast": { calories: 165, protein: 31, carbs: 0, fats: 3.6 },
-      "brown rice": { calories: 112, protein: 2.6, carbs: 23, fats: 0.9 },
-      "apple": { calories: 52, protein: 0.3, carbs: 14, fats: 0.2 },
-      "banana": { calories: 89, protein: 1.1, carbs: 23, fats: 0.3 },
+      // Weight-based foods (per 100g)
+      "chicken breast": { calories: 165, protein: 31, carbs: 0, fats: 3.6, unit: "weight" },
+      "brown rice": { calories: 112, protein: 2.6, carbs: 23, fats: 0.9, unit: "weight" },
+      "apple": { calories: 52, protein: 0.3, carbs: 14, fats: 0.2, unit: "weight" },
+      "banana": { calories: 89, protein: 1.1, carbs: 23, fats: 0.3, unit: "weight" },
+      "salmon": { calories: 208, protein: 25, carbs: 0, fats: 12, unit: "weight" },
+      
+      // Count-based foods (per piece/item)
+      "egg": { calories: 70, protein: 6, carbs: 0.6, fats: 5, unit: "count" },
+      "slice of bread": { calories: 80, protein: 3, carbs: 15, fats: 1, unit: "count" },
+      "medium apple": { calories: 95, protein: 0.5, carbs: 25, fats: 0.3, unit: "count" },
+      "medium banana": { calories: 105, protein: 1.3, carbs: 27, fats: 0.4, unit: "count" },
     };
 
     const foodKey = newFood.name.toLowerCase();
-    const nutrition = mockNutrition[foodKey] || { calories: 100, protein: 5, carbs: 20, fats: 3 };
-    const weight = parseFloat(foodWeight) / 100; // Convert grams to per 100g ratio
+    const nutrition = mockNutrition[foodKey];
+    
+    if (!nutrition) {
+      // Default estimation
+      const defaultNutrition = { calories: 100, protein: 5, carbs: 20, fats: 3, unit: "weight" };
+      const quantity = parseFloat(foodQuantity);
+      const multiplier = quantityType === "weight" ? quantity / 100 : quantity;
+      
+      setNewFood({
+        name: newFood.name,
+        calories: Math.round(defaultNutrition.calories * multiplier).toString(),
+        protein: Math.round(defaultNutrition.protein * multiplier).toString(),
+        carbs: Math.round(defaultNutrition.carbs * multiplier).toString(),
+        fats: Math.round(defaultNutrition.fats * multiplier).toString()
+      });
+    } else {
+      // Use database nutrition
+      const quantity = parseFloat(foodQuantity);
+      let multiplier;
+      
+      if (nutrition.unit === "count") {
+        multiplier = quantity; // Direct multiplication for count-based items
+        setQuantityType("count");
+      } else {
+        multiplier = quantity / 100; // Per 100g for weight-based items
+        setQuantityType("weight");
+      }
 
-    setNewFood({
-      name: newFood.name,
-      calories: Math.round(nutrition.calories * weight).toString(),
-      protein: Math.round(nutrition.protein * weight).toString(),
-      carbs: Math.round(nutrition.carbs * weight).toString(),
-      fats: Math.round(nutrition.fats * weight).toString()
-    });
+      setNewFood({
+        name: newFood.name,
+        calories: Math.round(nutrition.calories * multiplier).toString(),
+        protein: Math.round(nutrition.protein * multiplier).toString(),
+        carbs: Math.round(nutrition.carbs * multiplier).toString(),
+        fats: Math.round(nutrition.fats * multiplier).toString()
+      });
+    }
 
+    const unitText = quantityType === "count" ? "pieces" : "grams";
     toast({
       title: "Macros calculated! 🧮",
-      description: `Based on ${foodWeight}g of ${newFood.name}`,
+      description: `Based on ${foodQuantity} ${unitText} of ${newFood.name}`,
     });
   };
 
@@ -263,19 +299,19 @@ const CalorieTracker = ({ user }) => {
                     id="food-name"
                     value={newFood.name}
                     onChange={(e) => setNewFood({ ...newFood, name: e.target.value })}
-                    placeholder="e.g., Chicken breast, Apple"
+                    placeholder="e.g., Chicken breast, Egg"
                     className="mt-1"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="food-weight">Weight (grams)</Label>
+                  <Label htmlFor="food-quantity">Quantity</Label>
                   <div className="flex gap-2 mt-1">
                     <Input
-                      id="food-weight"
+                      id="food-quantity"
                       type="number"
-                      value={foodWeight}
-                      onChange={(e) => setFoodWeight(e.target.value)}
-                      placeholder="e.g., 150"
+                      value={foodQuantity}
+                      onChange={(e) => setFoodQuantity(e.target.value)}
+                      placeholder="e.g., 150g or 2 pieces"
                     />
                     <Button
                       onClick={calculateMacrosFromName}
@@ -286,6 +322,9 @@ const CalorieTracker = ({ user }) => {
                       <Calculator className="w-4 h-4" />
                     </Button>
                   </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Enter weight (grams) or count (pieces) based on food type
+                  </p>
                 </div>
               </div>
               
@@ -386,7 +425,7 @@ const CalorieTracker = ({ user }) => {
         </CardContent>
       </Card>
 
-      {/* Food List */}
+      {/* Enhanced Food List with Macro Details */}
       <Card>
         <CardHeader>
           <CardTitle>Today's Meals</CardTitle>
@@ -402,26 +441,39 @@ const CalorieTracker = ({ user }) => {
               {foodEntries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  className="p-4 bg-gray-50 rounded-lg border hover:shadow-md transition-shadow"
                 >
-                  <div className="flex-1">
-                    <div className="font-medium">{entry.name}</div>
-                    <div className="text-sm text-gray-500">{entry.time}</div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      P: {entry.protein}g | C: {entry.carbs}g | F: {entry.fats}g
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-right">
-                      <div className="font-bold text-green-600">
-                        {entry.calories} cal
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-lg">{entry.name}</div>
+                      <div className="text-sm text-gray-500 mb-2">{entry.time}</div>
+                      
+                      {/* Enhanced Macro Display */}
+                      <div className="grid grid-cols-4 gap-4 text-sm">
+                        <div className="bg-red-100 px-3 py-2 rounded-lg text-center">
+                          <div className="font-bold text-red-600">{entry.calories}</div>
+                          <div className="text-xs text-red-500">Calories</div>
+                        </div>
+                        <div className="bg-purple-100 px-3 py-2 rounded-lg text-center">
+                          <div className="font-bold text-purple-600">{entry.protein}g</div>
+                          <div className="text-xs text-purple-500">Protein</div>
+                        </div>
+                        <div className="bg-blue-100 px-3 py-2 rounded-lg text-center">
+                          <div className="font-bold text-blue-600">{entry.carbs}g</div>
+                          <div className="text-xs text-blue-500">Carbs</div>
+                        </div>
+                        <div className="bg-amber-100 px-3 py-2 rounded-lg text-center">
+                          <div className="font-bold text-amber-600">{entry.fats}g</div>
+                          <div className="text-xs text-amber-500">Fats</div>
+                        </div>
                       </div>
                     </div>
+                    
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeFood(entry.id)}
-                      className="text-red-500 hover:text-red-700"
+                      className="text-red-500 hover:text-red-700 ml-4"
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>
