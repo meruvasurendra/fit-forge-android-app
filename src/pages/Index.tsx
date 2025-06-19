@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,17 +10,20 @@ import CalorieTracker from "@/components/CalorieTracker";
 import BodyMetrics from "@/components/BodyMetrics";
 import WorkoutLogger from "@/components/WorkoutLogger";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
+import Auth from "@/components/Auth";
 
 const Index = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showSplash, setShowSplash] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const savedUser = localStorage.getItem("fitnessUser");
     if (savedUser) {
       setUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
     }
   }, []);
 
@@ -29,9 +31,34 @@ const Index = () => {
     setShowSplash(false);
   };
 
-  const handleOnboardingComplete = (userData) => {
+  const handleAuthComplete = (userData) => {
     setUser(userData);
+    setIsAuthenticated(true);
     localStorage.setItem("fitnessUser", JSON.stringify(userData));
+    toast({
+      title: "Welcome to FitForge! 🔥",
+      description: `Welcome ${userData.name || 'back'}! Your fitness journey continues.`,
+    });
+  };
+
+  const handleOnboardingComplete = (userData) => {
+    // Save user with additional auth info
+    const completeUserData = {
+      ...userData,
+      id: Date.now().toString(),
+      createdAt: new Date().toISOString(),
+      loginMethod: 'onboarding'
+    };
+    
+    setUser(completeUserData);
+    setIsAuthenticated(true);
+    localStorage.setItem("fitnessUser", JSON.stringify(completeUserData));
+    
+    // Also save to users list for future logins
+    const savedUsers = JSON.parse(localStorage.getItem('fitforge_users') || '[]');
+    savedUsers.push(completeUserData);
+    localStorage.setItem('fitforge_users', JSON.stringify(savedUsers));
+    
     toast({
       title: "Welcome to FitForge! 🔥",
       description: "Your fitness journey starts now - Let's forge your best self!",
@@ -42,7 +69,13 @@ const Index = () => {
     return <AnimatedSplashScreen onComplete={handleSplashComplete} />;
   }
 
-  if (!user) {
+  // Show auth screen if user is not authenticated
+  if (!isAuthenticated) {
+    return <Auth onAuthComplete={handleAuthComplete} />;
+  }
+
+  // Show onboarding if user doesn't have complete profile data
+  if (!user || !user.name || !user.age) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
