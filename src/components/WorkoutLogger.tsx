@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Dumbbell } from "lucide-react";
+import { Plus, Trash2, Dumbbell, Target, Filter, Lightbulb } from "lucide-react";
 
 const WorkoutLogger = ({ user }) => {
   const [workouts, setWorkouts] = useState([]);
@@ -21,32 +21,141 @@ const WorkoutLogger = ({ user }) => {
     weight: "",
   });
   const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const { toast } = useToast();
 
-  const exerciseSuggestions = {
-    "weight-loss": [
-      "Burpees", "Mountain Climbers", "Jump Squats", "High Knees", "Jumping Jacks",
-      "Push-ups", "Plank", "Russian Twists", "Bicycle Crunches"
-    ],
-    "muscle-gain": [
-      "Bench Press", "Deadlift", "Squats", "Pull-ups", "Overhead Press",
-      "Barbell Rows", "Dips", "Bicep Curls", "Tricep Extensions"
-    ],
-    "strength": [
-      "Deadlift", "Squats", "Bench Press", "Overhead Press", "Pull-ups",
-      "Barbell Rows", "Power Clean", "Front Squats"
-    ],
-    "endurance": [
-      "Running", "Cycling", "Rowing", "Swimming", "Burpees",
-      "Mountain Climbers", "Jump Rope", "Step-ups"
-    ],
-    "general-fitness": [
-      "Push-ups", "Squats", "Lunges", "Plank", "Burpees",
-      "Pull-ups", "Dips", "Russian Twists", "Jumping Jacks"
-    ]
+  // Enhanced exercise database with categories and difficulty
+  const exerciseDatabase = {
+    "weight-loss": {
+      beginner: [
+        { name: "Walking", category: "cardio", difficulty: "beginner" },
+        { name: "Bodyweight Squats", category: "strength", difficulty: "beginner" },
+        { name: "Modified Push-ups", category: "strength", difficulty: "beginner" },
+        { name: "Plank Hold", category: "core", difficulty: "beginner" },
+        { name: "Jumping Jacks", category: "cardio", difficulty: "beginner" }
+      ],
+      intermediate: [
+        { name: "Burpees", category: "cardio", difficulty: "intermediate" },
+        { name: "Mountain Climbers", category: "cardio", difficulty: "intermediate" },
+        { name: "Jump Squats", category: "strength", difficulty: "intermediate" },
+        { name: "Push-ups", category: "strength", difficulty: "intermediate" },
+        { name: "Russian Twists", category: "core", difficulty: "intermediate" }
+      ],
+      advanced: [
+        { name: "HIIT Sprints", category: "cardio", difficulty: "advanced" },
+        { name: "Plyometric Push-ups", category: "strength", difficulty: "advanced" },
+        { name: "Single-leg Burpees", category: "cardio", difficulty: "advanced" },
+        { name: "Pistol Squats", category: "strength", difficulty: "advanced" }
+      ]
+    },
+    "muscle-gain": {
+      beginner: [
+        { name: "Assisted Pull-ups", category: "back", difficulty: "beginner" },
+        { name: "Dumbbell Press", category: "chest", difficulty: "beginner" },
+        { name: "Goblet Squats", category: "legs", difficulty: "beginner" },
+        { name: "Dumbbell Rows", category: "back", difficulty: "beginner" }
+      ],
+      intermediate: [
+        { name: "Bench Press", category: "chest", difficulty: "intermediate" },
+        { name: "Deadlifts", category: "legs", difficulty: "intermediate" },
+        { name: "Pull-ups", category: "back", difficulty: "intermediate" },
+        { name: "Overhead Press", category: "shoulders", difficulty: "intermediate" },
+        { name: "Barbell Rows", category: "back", difficulty: "intermediate" }
+      ],
+      advanced: [
+        { name: "Weighted Pull-ups", category: "back", difficulty: "advanced" },
+        { name: "Heavy Deadlifts", category: "legs", difficulty: "advanced" },
+        { name: "Incline Barbell Press", category: "chest", difficulty: "advanced" },
+        { name: "Bulgarian Split Squats", category: "legs", difficulty: "advanced" }
+      ]
+    },
+    "strength": {
+      beginner: [
+        { name: "Bodyweight Squats", category: "legs", difficulty: "beginner" },
+        { name: "Wall Push-ups", category: "chest", difficulty: "beginner" },
+        { name: "Assisted Pull-ups", category: "back", difficulty: "beginner" }
+      ],
+      intermediate: [
+        { name: "Squats", category: "legs", difficulty: "intermediate" },
+        { name: "Deadlifts", category: "legs", difficulty: "intermediate" },
+        { name: "Bench Press", category: "chest", difficulty: "intermediate" },
+        { name: "Overhead Press", category: "shoulders", difficulty: "intermediate" }
+      ],
+      advanced: [
+        { name: "Power Clean", category: "full-body", difficulty: "advanced" },
+        { name: "Front Squats", category: "legs", difficulty: "advanced" },
+        { name: "Weighted Dips", category: "chest", difficulty: "advanced" }
+      ]
+    },
+    "endurance": {
+      beginner: [
+        { name: "Brisk Walking", category: "cardio", difficulty: "beginner" },
+        { name: "Stationary Cycling", category: "cardio", difficulty: "beginner" },
+        { name: "Swimming", category: "cardio", difficulty: "beginner" }
+      ],
+      intermediate: [
+        { name: "Running", category: "cardio", difficulty: "intermediate" },
+        { name: "Rowing", category: "cardio", difficulty: "intermediate" },
+        { name: "Cycling", category: "cardio", difficulty: "intermediate" }
+      ],
+      advanced: [
+        { name: "Marathon Training", category: "cardio", difficulty: "advanced" },
+        { name: "Triathlon Training", category: "cardio", difficulty: "advanced" }
+      ]
+    }
   };
 
-  const suggestedExercises = exerciseSuggestions[user.fitnessGoal] || exerciseSuggestions["general-fitness"];
+  // Get smart suggestions based on user profile
+  const getSmartSuggestions = () => {
+    const userGoal = user.fitnessGoal || "general-fitness";
+    const userLevel = user.fitnessLevel || "beginner";
+    
+    if (!exerciseDatabase[userGoal]) {
+      return exerciseDatabase["weight-loss"][userLevel] || [];
+    }
+    
+    return exerciseDatabase[userGoal][userLevel] || [];
+  };
+
+  // Get all exercises for current goal
+  const getAllExercisesForGoal = () => {
+    const userGoal = user.fitnessGoal || "weight-loss";
+    const goalExercises = exerciseDatabase[userGoal] || exerciseDatabase["weight-loss"];
+    
+    return Object.values(goalExercises).flat();
+  };
+
+  // Filter exercises by category
+  const getFilteredExercises = () => {
+    const allExercises = getAllExercisesForGoal();
+    
+    if (selectedCategory === "all") {
+      return allExercises;
+    }
+    
+    return allExercises.filter(exercise => exercise.category === selectedCategory);
+  };
+
+  // Get unique categories for current goal
+  const getCategories = () => {
+    const allExercises = getAllExercisesForGoal();
+    const categories = [...new Set(allExercises.map(ex => ex.category))];
+    return categories;
+  };
+
+  // Generate workout suggestions based on user's goal and recent workouts
+  const generateWorkoutSuggestion = () => {
+    const suggestions = getSmartSuggestions();
+    const recentExercises = workouts.slice(-3).flatMap(w => w.exercises.map(e => e.name));
+    
+    // Filter out recently done exercises to encourage variety
+    const freshSuggestions = suggestions.filter(ex => 
+      !recentExercises.includes(ex.name)
+    );
+    
+    return freshSuggestions.slice(0, 4);
+  };
 
   useEffect(() => {
     const savedWorkouts = localStorage.getItem("workouts");
@@ -121,14 +230,13 @@ const WorkoutLogger = ({ user }) => {
       name: currentWorkout.name,
       exercises: currentWorkout.exercises,
       date: new Date().toLocaleDateString(),
-      duration: "45 min", // This could be tracked properly
+      duration: "45 min",
     };
 
     const newWorkouts = [...workouts, workout];
     setWorkouts(newWorkouts);
     localStorage.setItem("workouts", JSON.stringify(newWorkouts));
 
-    // Update weekly workout count
     const workoutsThisWeek = parseInt(localStorage.getItem("workoutsThisWeek") || "0");
     localStorage.setItem("workoutsThisWeek", (workoutsThisWeek + 1).toString());
 
@@ -139,6 +247,11 @@ const WorkoutLogger = ({ user }) => {
       title: "Workout completed! 🎉",
       description: `Great job on your ${workout.name} session!`,
     });
+  };
+
+  const addSuggestedExercise = (exerciseName) => {
+    setNewExercise({ ...newExercise, name: exerciseName });
+    setShowSuggestions(false);
   };
 
   return (
@@ -166,6 +279,37 @@ const WorkoutLogger = ({ user }) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Smart Suggestions Card */}
+      {!isWorkoutActive && (
+        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-700">
+              <Lightbulb className="w-5 h-5" />
+              Smart Suggestions for {user.fitnessGoal?.replace('-', ' ').toUpperCase()}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {generateWorkoutSuggestion().map((exercise, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => addSuggestedExercise(exercise.name)}
+                  className="text-xs p-2 h-auto border-blue-200 hover:bg-blue-100"
+                >
+                  <Target className="w-3 h-3 mr-1" />
+                  {exercise.name}
+                </Button>
+              ))}
+            </div>
+            <p className="text-xs text-blue-600 mt-2">
+              Personalized for your {user.fitnessLevel} level • Click to add to workout
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Current Workout */}
       <Card>
@@ -203,6 +347,25 @@ const WorkoutLogger = ({ user }) => {
                 <p className="text-gray-600">Workout in progress...</p>
               </div>
 
+              {/* Exercise Filter */}
+              <div className="flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                <Label>Filter by category:</Label>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {getCategories().map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category.charAt(0).toUpperCase() + category.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Add Exercise */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 <div>
@@ -215,9 +378,14 @@ const WorkoutLogger = ({ user }) => {
                       <SelectValue placeholder="Choose exercise" />
                     </SelectTrigger>
                     <SelectContent>
-                      {suggestedExercises.map((exercise) => (
-                        <SelectItem key={exercise} value={exercise}>
-                          {exercise}
+                      {getFilteredExercises().map((exercise) => (
+                        <SelectItem key={exercise.name} value={exercise.name}>
+                          <div className="flex items-center gap-2">
+                            <span>{exercise.name}</span>
+                            <span className="text-xs text-gray-500">
+                              ({exercise.difficulty})
+                            </span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
