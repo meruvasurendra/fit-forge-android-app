@@ -27,8 +27,8 @@ const Index = () => {
     setUser(userData);
     localStorage.setItem("fitnessUser", JSON.stringify(userData));
     toast({
-      title: "Welcome to FitTrack! 🎉",
-      description: "Your fitness journey starts now!",
+      title: "Welcome to FitForge! 🔥",
+      description: "Your fitness journey starts now - Let's forge your best self!",
     });
   };
 
@@ -37,21 +37,28 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
       <div className="container mx-auto px-4 py-6">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
-            Welcome back, {user.name}! 💪
+        <header className="mb-8 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src="/lovable-uploads/c39fd28d-6214-413d-ab66-7abee848d281.png" 
+              alt="FitForge Logo" 
+              className="h-16 w-auto mr-3"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Welcome back, {user.name}! 🔥
           </h1>
-          <p className="text-gray-600">Let's crush your fitness goals today</p>
+          <p className="text-blue-200">Forge your fitness destiny today</p>
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="calories">Calories</TabsTrigger>
-            <TabsTrigger value="metrics">Metrics</TabsTrigger>
-            <TabsTrigger value="workouts">Workouts</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 mb-6 bg-slate-800/50 border-slate-700">
+            <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-blue-600">Dashboard</TabsTrigger>
+            <TabsTrigger value="calories" className="text-white data-[state=active]:bg-blue-600">Calories</TabsTrigger>
+            <TabsTrigger value="metrics" className="text-white data-[state=active]:bg-blue-600">Metrics</TabsTrigger>
+            <TabsTrigger value="workouts" className="text-white data-[state=active]:bg-blue-600">Workouts</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
