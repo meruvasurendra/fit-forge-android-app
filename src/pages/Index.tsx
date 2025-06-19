@@ -10,10 +10,12 @@ import Dashboard from "@/components/Dashboard";
 import CalorieTracker from "@/components/CalorieTracker";
 import BodyMetrics from "@/components/BodyMetrics";
 import WorkoutLogger from "@/components/WorkoutLogger";
+import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 
 const Index = () => {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showSplash, setShowSplash] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -23,6 +25,10 @@ const Index = () => {
     }
   }, []);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
   const handleOnboardingComplete = (userData) => {
     setUser(userData);
     localStorage.setItem("fitnessUser", JSON.stringify(userData));
@@ -31,6 +37,10 @@ const Index = () => {
       description: "Your fitness journey starts now - Let's forge your best self!",
     });
   };
+
+  if (showSplash) {
+    return <AnimatedSplashScreen onComplete={handleSplashComplete} />;
+  }
 
   if (!user) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
