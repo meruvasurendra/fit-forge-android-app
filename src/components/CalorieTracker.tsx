@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,10 +19,9 @@ const CalorieTracker = ({ user }) => {
     protein: "",
     carbs: "",
     fats: "",
-    weight: "",
-    count: ""
+    amount: "",
+    unit: "quantity"
   });
-  const [foodWeight, setFoodWeight] = useState("");
   const [isImageUpload, setIsImageUpload] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const { toast } = useToast();
@@ -43,14 +43,14 @@ const CalorieTracker = ({ user }) => {
   }, []);
 
   const foodDatabase = {
-    "chicken breast": { calories: 165, protein: 31, carbs: 0, fats: 3.6, unit: "weight" },
-    "rice": { calories: 130, protein: 2.7, carbs: 28, fats: 0.3, unit: "weight" },
-    "banana": { calories: 89, protein: 1.1, carbs: 23, fats: 0.3, unit: "weight" },
-    "eggs": { calories: 70, protein: 6, carbs: 0.6, fats: 5, unit: "count" },
-    "bread": { calories: 80, protein: 4, carbs: 14, fats: 1, unit: "count" },
-    "apple": { calories: 52, protein: 0.3, carbs: 14, fats: 0.2, unit: "count" },
-    "oats": { calories: 389, protein: 16.9, carbs: 66, fats: 6.9, unit: "weight" },
-    "milk": { calories: 42, protein: 3.4, carbs: 5, fats: 1, unit: "weight" }
+    "chicken breast": { calories: 165, protein: 31, carbs: 0, fats: 3.6, per100g: true },
+    "rice": { calories: 130, protein: 2.7, carbs: 28, fats: 0.3, per100g: true },
+    "banana": { calories: 89, protein: 1.1, carbs: 23, fats: 0.3, per100g: true },
+    "eggs": { calories: 70, protein: 6, carbs: 0.6, fats: 5, per100g: false },
+    "bread": { calories: 80, protein: 4, carbs: 14, fats: 1, per100g: false },
+    "apple": { calories: 52, protein: 0.3, carbs: 14, fats: 0.2, per100g: false },
+    "oats": { calories: 389, protein: 16.9, carbs: 66, fats: 6.9, per100g: true },
+    "milk": { calories: 42, protein: 3.4, carbs: 5, fats: 1, per100g: true }
   };
 
   const handleImageUpload = (event) => {
@@ -70,8 +70,8 @@ const CalorieTracker = ({ user }) => {
             protein: foodData.protein.toString(),
             carbs: foodData.carbs.toString(),
             fats: foodData.fats.toString(),
-            weight: foodData.unit === "weight" ? "100" : "",
-            count: foodData.unit === "count" ? "1" : ""
+            amount: foodData.per100g ? "100" : "1",
+            unit: foodData.per100g ? "weight" : "quantity"
           });
           
           toast({
@@ -85,14 +85,15 @@ const CalorieTracker = ({ user }) => {
 
   const calculateMacros = () => {
     const selectedFood = foodDatabase[newFood.name.toLowerCase()];
-    if (!selectedFood) return;
+    if (!selectedFood || !newFood.amount) return;
 
     let multiplier = 1;
+    const amount = parseFloat(newFood.amount);
     
-    if (selectedFood.unit === "weight" && newFood.weight) {
-      multiplier = parseFloat(newFood.weight) / 100;
-    } else if (selectedFood.unit === "count" && newFood.count) {
-      multiplier = parseFloat(newFood.count);
+    if (newFood.unit === "weight") {
+      multiplier = amount / 100; // Per 100g
+    } else {
+      multiplier = amount; // Per piece/quantity
     }
 
     const calculatedMacros = {
@@ -127,8 +128,8 @@ const CalorieTracker = ({ user }) => {
       protein: parseFloat(newFood.protein) || 0,
       carbs: parseFloat(newFood.carbs) || 0,
       fats: parseFloat(newFood.fats) || 0,
-      weight: newFood.weight ? parseFloat(newFood.weight) : null,
-      count: newFood.count ? parseInt(newFood.count) : null,
+      amount: parseFloat(newFood.amount),
+      unit: newFood.unit,
       timestamp: new Date().toLocaleTimeString()
     };
 
@@ -148,7 +149,7 @@ const CalorieTracker = ({ user }) => {
     localStorage.setItem("todayMacros", JSON.stringify(newMacros));
     localStorage.setItem("foodEntries", JSON.stringify(newEntries));
 
-    setNewFood({ name: "", calories: "", protein: "", carbs: "", fats: "", weight: "", count: "" });
+    setNewFood({ name: "", calories: "", protein: "", carbs: "", fats: "", amount: "", unit: "quantity" });
     setUploadedImage(null);
     setIsImageUpload(false);
 
@@ -260,76 +261,94 @@ const CalorieTracker = ({ user }) => {
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Food Item</Label>
-                <Select
-                  value={newFood.name}
-                  onValueChange={(value) => {
-                    setNewFood({ ...newFood, name: value });
-                    const selectedFood = foodDatabase[value.toLowerCase()];
-                    if (selectedFood) {
-                      if (selectedFood.unit === "weight") {
-                        setNewFood(prev => ({ ...prev, name: value, weight: "100", count: "" }));
-                      } else {
-                        setNewFood(prev => ({ ...prev, name: value, count: "1", weight: "" }));
-                      }
-                    }
-                  }}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Select food item" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.keys(foodDatabase).map((food) => (
-                      <SelectItem key={food} value={food}>
-                        {food.charAt(0).toUpperCase() + food.slice(1)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="food-name">Food Item</Label>
+                  <Input
+                    id="food-name"
+                    value={newFood.name}
+                    onChange={(e) => setNewFood({ ...newFood, name: e.target.value })}
+                    placeholder="Enter food name"
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={newFood.amount}
+                    onChange={(e) => setNewFood({ ...newFood, amount: e.target.value })}
+                    onBlur={calculateMacros}
+                    placeholder={newFood.unit === "weight" ? "100" : "1"}
+                    className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <Label>Unit</Label>
+                  <Select
+                    value={newFood.unit}
+                    onValueChange={(value) => setNewFood({ ...newFood, unit: value })}
+                  >
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="quantity">Quantity (pieces)</SelectItem>
+                      <SelectItem value="weight">Weight (grams)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {newFood.name && foodDatabase[newFood.name.toLowerCase()]?.unit === "weight" && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="weight">Weight (grams)</Label>
+                  <Label htmlFor="calories">Calories</Label>
                   <Input
-                    id="weight"
+                    id="calories"
                     type="number"
-                    value={newFood.weight}
-                    onChange={(e) => setNewFood({ ...newFood, weight: e.target.value })}
-                    onBlur={calculateMacros}
-                    placeholder="100"
+                    value={newFood.calories}
+                    onChange={(e) => setNewFood({ ...newFood, calories: e.target.value })}
+                    placeholder="0"
                     className="mt-1"
                   />
                 </div>
-              )}
-
-              {newFood.name && foodDatabase[newFood.name.toLowerCase()]?.unit === "count" && (
                 <div>
-                  <Label htmlFor="count">Count</Label>
+                  <Label htmlFor="protein">Protein (g)</Label>
                   <Input
-                    id="count"
+                    id="protein"
                     type="number"
-                    value={newFood.count}
-                    onChange={(e) => setNewFood({ ...newFood, count: e.target.value })}
-                    onBlur={calculateMacros}
-                    placeholder="1"
+                    value={newFood.protein}
+                    onChange={(e) => setNewFood({ ...newFood, protein: e.target.value })}
+                    placeholder="0"
                     className="mt-1"
                   />
                 </div>
-              )}
-            </div>
-          )}
-
-          {(newFood.calories || newFood.protein || newFood.carbs || newFood.fats) && (
-            <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-              <h4 className="font-semibold mb-2">Nutritional Information:</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                <div>Calories: {newFood.calories}</div>
-                <div>Protein: {newFood.protein}g</div>
-                <div>Carbs: {newFood.carbs}g</div>
-                <div>Fats: {newFood.fats}g</div>
+                <div>
+                  <Label htmlFor="carbs">Carbs (g)</Label>
+                  <Input
+                    id="carbs"
+                    type="number"
+                    value={newFood.carbs}
+                    onChange={(e) => setNewFood({ ...newFood, carbs: e.target.value })}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="fats">Fats (g)</Label>
+                  <Input
+                    id="fats"
+                    type="number"
+                    value={newFood.fats}
+                    onChange={(e) => setNewFood({ ...newFood, fats: e.target.value })}
+                    placeholder="0"
+                    className="mt-1"
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -360,7 +379,7 @@ const CalorieTracker = ({ user }) => {
                     <div>
                       <h4 className="font-semibold text-lg capitalize">{food.name}</h4>
                       <div className="text-sm text-gray-500">
-                        {food.weight ? `${food.weight}g` : `${food.count} piece(s)`} • {food.timestamp}
+                        {food.amount} {food.unit === "weight" ? "g" : "pc(s)"} • {food.timestamp}
                       </div>
                     </div>
                     <Button

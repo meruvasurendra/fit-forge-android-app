@@ -160,7 +160,7 @@ const Onboarding = ({ onComplete }) => {
               onCheckedChange={(checked) => 
                 setFormData({
                   ...formData,
-                  dietaryPreferences: { ...formData.dietaryPreferences, isVegetarian: checked }
+                  dietaryPreferences: { ...formData.dietaryPreferences, isVegetarian: !!checked }
                 })
               }
             />
