@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +16,7 @@ import NotificationCenter from "@/components/NotificationCenter";
 import ProfileCustomization from "@/components/ProfileCustomization";
 import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 import Auth from "@/components/Auth";
+import SmartDietPlanner from "@/components/SmartDietPlanner";
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -107,13 +107,14 @@ const Index = () => {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-6 bg-slate-800/50 border-slate-700">
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 mb-6 bg-slate-800/50 border-slate-700">
             <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-blue-600">Dashboard</TabsTrigger>
             <TabsTrigger value="calories" className="text-white data-[state=active]:bg-blue-600">Calories</TabsTrigger>
             <TabsTrigger value="metrics" className="text-white data-[state=active]:bg-blue-600">Metrics</TabsTrigger>
             <TabsTrigger value="workouts" className="text-white data-[state=active]:bg-blue-600">Workouts</TabsTrigger>
             <TabsTrigger value="goals" className="text-white data-[state=active]:bg-blue-600">Goals</TabsTrigger>
             <TabsTrigger value="nutrition" className="text-white data-[state=active]:bg-blue-600">Nutrition</TabsTrigger>
+            <TabsTrigger value="diet-planner" className="text-white data-[state=active]:bg-blue-600">Diet Plan</TabsTrigger>
             <TabsTrigger value="social" className="text-white data-[state=active]:bg-blue-600">Social</TabsTrigger>
             <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-blue-600">Alerts</TabsTrigger>
             <TabsTrigger value="profile" className="text-white data-[state=active]:bg-blue-600">Profile</TabsTrigger>
@@ -141,6 +142,10 @@ const Index = () => {
 
           <TabsContent value="nutrition">
             <NutritionInsights user={user} />
+          </TabsContent>
+
+          <TabsContent value="diet-planner">
+            <SmartDietPlanner user={user} />
           </TabsContent>
 
           <TabsContent value="social">
