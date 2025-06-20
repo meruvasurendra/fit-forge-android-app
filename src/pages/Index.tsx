@@ -95,7 +95,7 @@ const Index = () => {
         <header className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/lovable-uploads/c39fd28d-6214-413d-ab66-7abee848d281.png" 
+              src="/lovable-uploads/5075fe22-87bd-4d70-96f9-0931d4711feb.png" 
               alt="FitForge Logo" 
               className="h-16 w-auto mr-3"
             />
@@ -107,17 +107,67 @@ const Index = () => {
         </header>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-11 mb-6 bg-slate-800/50 border-slate-700">
-            <TabsTrigger value="dashboard" className="text-white data-[state=active]:bg-blue-600">Dashboard</TabsTrigger>
-            <TabsTrigger value="calories" className="text-white data-[state=active]:bg-blue-600">Calories</TabsTrigger>
-            <TabsTrigger value="metrics" className="text-white data-[state=active]:bg-blue-600">Metrics</TabsTrigger>
-            <TabsTrigger value="workouts" className="text-white data-[state=active]:bg-blue-600">Workouts</TabsTrigger>
-            <TabsTrigger value="goals" className="text-white data-[state=active]:bg-blue-600">Goals</TabsTrigger>
-            <TabsTrigger value="nutrition" className="text-white data-[state=active]:bg-blue-600">Nutrition</TabsTrigger>
-            <TabsTrigger value="diet-planner" className="text-white data-[state=active]:bg-blue-600">Diet Plan</TabsTrigger>
-            <TabsTrigger value="social" className="text-white data-[state=active]:bg-blue-600">Social</TabsTrigger>
-            <TabsTrigger value="notifications" className="text-white data-[state=active]:bg-blue-600">Alerts</TabsTrigger>
-            <TabsTrigger value="profile" className="text-white data-[state=active]:bg-blue-600">Profile</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-5 lg:grid-cols-10 mb-6 bg-slate-800/80 border border-slate-600 rounded-lg p-1 backdrop-blur-sm">
+            <TabsTrigger 
+              value="dashboard" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Dashboard
+            </TabsTrigger>
+            <TabsTrigger 
+              value="calories" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Calories
+            </TabsTrigger>
+            <TabsTrigger 
+              value="metrics" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Metrics
+            </TabsTrigger>
+            <TabsTrigger 
+              value="workouts" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Workouts
+            </TabsTrigger>
+            <TabsTrigger 
+              value="goals" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Goals
+            </TabsTrigger>
+            <TabsTrigger 
+              value="nutrition" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Nutrition
+            </TabsTrigger>
+            <TabsTrigger 
+              value="diet-planner" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Diet Plan
+            </TabsTrigger>
+            <TabsTrigger 
+              value="social" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Social
+            </TabsTrigger>
+            <TabsTrigger 
+              value="notifications" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Alerts
+            </TabsTrigger>
+            <TabsTrigger 
+              value="profile" 
+              className="text-white text-xs lg:text-sm px-2 lg:px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white data-[state=active]:shadow-lg hover:bg-slate-700/50"
+            >
+              Profile
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">

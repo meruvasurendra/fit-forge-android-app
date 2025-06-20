@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,11 +55,36 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
   };
 
   const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file (PNG, JPG, etc.)",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check file size (limit to 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileData({ ...profileData, avatar: e.target?.result as string });
+        const result = e.target?.result as string;
+        setProfileData({ ...profileData, avatar: result });
+        toast({
+          title: "Profile picture updated! 📸",
+          description: "Your new profile picture has been uploaded successfully"
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -89,31 +113,29 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
   return (
     <div className="space-y-6">
       {/* Profile Header */}
-      <Card className="bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <Card className="bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-xl">
         <CardContent className="p-8">
           <div className="flex items-center space-x-6">
             <div className="relative">
-              <Avatar className="w-24 h-24 border-4 border-white">
-                <AvatarImage src={profileData.avatar} />
-                <AvatarFallback className="text-2xl bg-white text-blue-600">
-                  {profileData.name.split(' ').map(n => n[0]).join('')}
+              <Avatar className="w-24 h-24 border-4 border-white shadow-lg">
+                <AvatarImage src={profileData.avatar} alt="Profile picture" />
+                <AvatarFallback className="text-2xl bg-white text-orange-600 font-bold">
+                  {profileData.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              {isEditing && (
-                <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer shadow-lg">
-                  <Camera className="w-4 h-4 text-blue-600" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </label>
-              )}
+              <label className="absolute bottom-0 right-0 bg-white rounded-full p-2 cursor-pointer shadow-lg hover:shadow-xl transition-shadow duration-200 hover:bg-gray-50">
+                <Camera className="w-4 h-4 text-orange-600" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </label>
             </div>
             <div className="flex-1">
               <h1 className="text-3xl font-bold mb-2">{profileData.name}</h1>
-              <p className="text-blue-100 mb-4">
+              <p className="text-orange-100 mb-4">
                 {profileData.fitnessGoal?.replace("-", " ").toUpperCase()} • {profileData.activityLevel?.toUpperCase()} ACTIVITY
               </p>
               <div className="flex space-x-4 text-sm">
@@ -138,7 +160,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
             <Button
               variant="secondary"
               onClick={() => setIsEditing(!isEditing)}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 bg-white text-orange-600 hover:bg-gray-100 transition-colors duration-200"
             >
               {isEditing ? <Save className="w-4 h-4" /> : <Edit className="w-4 h-4" />}
               {isEditing ? 'Save' : 'Edit Profile'}
@@ -150,7 +172,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Information */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -248,7 +270,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
                       className="mt-1"
                     />
                   </div>
-                  <Button onClick={handleSave} className="w-full">
+                  <Button onClick={handleSave} className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600">
                     <Save className="w-4 h-4 mr-2" />
                     Save Changes
                   </Button>
@@ -281,7 +303,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
           </Card>
 
           {/* Health Metrics */}
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle>Health Metrics</CardTitle>
             </CardHeader>
@@ -315,7 +337,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
 
         {/* Achievements */}
         <div className="space-y-6">
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Award className="w-5 h-5" />
@@ -327,7 +349,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
                 {achievements.map((achievement) => (
                   <div
                     key={achievement.id}
-                    className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                   >
                     <div className="text-2xl">{achievement.icon}</div>
                     <div className="flex-1">
@@ -342,7 +364,7 @@ const ProfileCustomization = ({ user, onUpdateUser }) => {
           </Card>
 
           {/* Quick Stats */}
-          <Card>
+          <Card className="shadow-lg">
             <CardHeader>
               <CardTitle>Quick Stats</CardTitle>
             </CardHeader>
