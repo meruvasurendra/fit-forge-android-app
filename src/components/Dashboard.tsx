@@ -17,6 +17,8 @@ const Dashboard = ({ user }) => {
   const [todayMacros, setTodayMacros] = useState({ protein: 0, carbs: 0, fats: 0 });
   const [weightData, setWeightData] = useState([]);
   const [calorieData, setCalorieData] = useState([]);
+  const [recentAchievements, setRecentAchievements] = useState([]);
+  const [activeGoals, setActiveGoals] = useState([]);
 
   const macroGoals = { protein: 150, carbs: 250, fats: 67 };
 
@@ -28,6 +30,7 @@ const Dashboard = ({ user }) => {
     const savedWorkouts = localStorage.getItem("workoutsThisWeek");
     const savedWeightData = localStorage.getItem("weightData");
     const savedCalorieData = localStorage.getItem("calorieData");
+    const savedGoals = localStorage.getItem("userGoals");
 
     if (savedCalories) {
       setDashboardData(prev => ({ ...prev, todayCalories: parseInt(savedCalories) }));
@@ -46,7 +49,31 @@ const Dashboard = ({ user }) => {
     }
     if (savedCalorieData) {
       setCalorieData(JSON.parse(savedCalorieData));
+    } else {
+      // Generate sample weekly calorie data
+      setCalorieData([
+        { day: 'Mon', calories: 1850 },
+        { day: 'Tue', calories: 2100 },
+        { day: 'Wed', calories: 1950 },
+        { day: 'Thu', calories: 2200 },
+        { day: 'Fri', calories: 1800 },
+        { day: 'Sat', calories: 2300 },
+        { day: 'Sun', calories: 2000 }
+      ]);
     }
+
+    // Load goals for dashboard display
+    if (savedGoals) {
+      const goals = JSON.parse(savedGoals);
+      setActiveGoals(goals.filter(goal => !goal.completed).slice(0, 3));
+    }
+
+    // Set recent achievements
+    setRecentAchievements([
+      { title: "7-Day Streak", icon: "🔥", date: "Today" },
+      { title: "Goal Achieved", icon: "🎯", date: "2 days ago" },
+      { title: "New PR", icon: "💪", date: "1 week ago" }
+    ]);
   }, []);
 
   const calorieProgress = (dashboardData.todayCalories / dashboardData.calorieGoal) * 100;
@@ -128,6 +155,54 @@ const Dashboard = ({ user }) => {
               value={workoutProgress} 
               className="mt-2 bg-orange-400"
             />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Active Goals & Recent Achievements */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Goals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {activeGoals.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No active goals. Set some in the Goals tab!</p>
+            ) : (
+              <div className="space-y-3">
+                {activeGoals.map((goal) => (
+                  <div key={goal.id} className="border rounded-lg p-3">
+                    <div className="flex justify-between items-center mb-2">
+                      <h4 className="font-semibold">{goal.title}</h4>
+                      <span className="text-sm text-gray-500">{Math.round((goal.current / goal.target) * 100)}%</span>
+                    </div>
+                    <Progress value={(goal.current / goal.target) * 100} className="h-2" />
+                    <div className="text-sm text-gray-600 mt-1">
+                      {goal.current} / {goal.target} {goal.unit}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Achievements</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentAchievements.map((achievement, index) => (
+                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="text-2xl">{achievement.icon}</div>
+                  <div>
+                    <h4 className="font-semibold">{achievement.title}</h4>
+                    <p className="text-sm text-gray-600">{achievement.date}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
