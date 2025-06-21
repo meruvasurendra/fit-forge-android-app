@@ -33,86 +33,50 @@ const SwipeableMenuGrid = ({ activeTab, onTabChange }: SwipeableMenuGridProps) =
     { id: "profile", label: "Profile", icon: User, color: "bg-gradient-to-br from-cyan-500 to-cyan-600" },
   ];
 
-  // Split items into groups of 5
-  const itemGroups = [];
-  for (let i = 0; i < menuItems.length; i += 5) {
-    itemGroups.push(menuItems.slice(i, i + 5));
-  }
+  // Show only first 4 menu items
+  const visibleMenuItems = menuItems.slice(0, 4);
 
   return (
     <div className="mb-8 mx-4">
       {/* White container with proper padding and rounded corners */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
-        <Carousel
-          opts={{
-            align: "start",
-            loop: false,
-          }}
-          className="w-full"
-        >
-          <CarouselContent className="-ml-2">
-            {itemGroups.map((group, groupIndex) => (
-              <CarouselItem key={groupIndex} className="basis-full pl-2">
-                <div className="grid grid-cols-5 gap-2">
-                  {group.map((item) => {
-                    const IconComponent = item.icon;
-                    const isActive = activeTab === item.id;
-                    
-                    return (
-                      <div
-                        key={item.id}
-                        className={`
-                          cursor-pointer transition-all duration-300 hover:scale-105
-                          ${isActive 
-                            ? 'ring-2 ring-orange-500 shadow-lg shadow-orange-500/30 rounded-lg' 
-                            : 'hover:shadow-md'
-                          }
-                        `}
-                        onClick={() => onTabChange(item.id)}
-                      >
-                        <div className="p-2 text-center min-w-0">
-                          <div className={`
-                            w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-1 
-                            ${item.color} shadow-md
-                            ${isActive ? 'scale-110' : ''}
-                            transition-transform duration-200
-                          `}>
-                            <IconComponent className="w-5 h-5 text-white" />
-                          </div>
-                          <p className={`
-                            text-xs font-medium transition-colors duration-200 truncate
-                            ${isActive ? 'text-orange-500' : 'text-slate-600'}
-                          `}>
-                            {item.label}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          
-          {itemGroups.length > 1 && (
-            <>
-              <CarouselPrevious className="left-1 w-8 h-8 bg-slate-100/90 border-slate-300 text-slate-600 hover:bg-slate-200" />
-              <CarouselNext className="right-1 w-8 h-8 bg-slate-100/90 border-slate-300 text-slate-600 hover:bg-slate-200" />
-            </>
-          )}
-        </Carousel>
-        
-        {/* Pagination dots */}
-        {itemGroups.length > 1 && (
-          <div className="flex justify-center mt-3 space-x-1">
-            {itemGroups.map((_, index) => (
+        <div className="grid grid-cols-4 gap-3">
+          {visibleMenuItems.map((item) => {
+            const IconComponent = item.icon;
+            const isActive = activeTab === item.id;
+            
+            return (
               <div
-                key={index}
-                className="w-2 h-2 rounded-full bg-slate-300"
-              />
-            ))}
-          </div>
-        )}
+                key={item.id}
+                className={`
+                  cursor-pointer transition-all duration-300 hover:scale-105
+                  ${isActive 
+                    ? 'ring-2 ring-orange-500 shadow-lg shadow-orange-500/30 rounded-lg' 
+                    : 'hover:shadow-md'
+                  }
+                `}
+                onClick={() => onTabChange(item.id)}
+              >
+                <div className="p-2 text-center min-w-0">
+                  <div className={`
+                    w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-1 
+                    ${item.color} shadow-md
+                    ${isActive ? 'scale-110' : ''}
+                    transition-transform duration-200
+                  `}>
+                    <IconComponent className="w-5 h-5 text-white" />
+                  </div>
+                  <p className={`
+                    text-xs font-medium transition-colors duration-200 truncate
+                    ${isActive ? 'text-orange-500' : 'text-slate-600'}
+                  `}>
+                    {item.label}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
