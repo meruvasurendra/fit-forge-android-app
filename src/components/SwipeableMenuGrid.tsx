@@ -33,14 +33,14 @@ const SwipeableMenuGrid = ({ activeTab, onTabChange }: SwipeableMenuGridProps) =
     { id: "profile", label: "Profile", icon: User, color: "bg-gradient-to-br from-cyan-500 to-cyan-600" },
   ];
 
-  // Show only first 3 menu items
-  const visibleMenuItems = menuItems.slice(0, 3);
+  // Show only first 4 menu items
+  const visibleMenuItems = menuItems.slice(0, 4);
 
   return (
     <div className="mb-8 mx-4">
       {/* White container with proper padding and rounded corners */}
       <div className="bg-white rounded-xl p-4 shadow-lg">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-4 gap-3">
           {visibleMenuItems.map((item) => {
             const IconComponent = item.icon;
             const isActive = activeTab === item.id;
