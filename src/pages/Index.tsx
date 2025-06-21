@@ -97,7 +97,7 @@ const Index = () => {
         <header className="mb-8 text-center">
           <div className="flex items-center justify-center mb-4">
             <img 
-              src="/lovable-uploads/ed3e8193-3148-4d56-890a-5a2842b23040.png" 
+              src="/lovable-uploads/b58cc98a-369c-41f7-9039-63696829d8f7.png" 
               alt="FitForge Logo" 
               className="h-16 w-auto mr-3"
             />
