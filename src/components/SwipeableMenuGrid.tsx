@@ -1,3 +1,4 @@
+
 import {
   Carousel,
   CarouselContent,
@@ -15,7 +16,6 @@ import {
   Calendar,
   Users,
   Bell,
-  User,
 } from "lucide-react";
 
 interface SwipeableMenuGridProps {
@@ -34,7 +34,6 @@ const SwipeableMenuGrid = ({ activeTab, onTabChange }: SwipeableMenuGridProps) =
     { id: "diet-planner", label: "Diet Plan", icon: Calendar, color: "bg-gradient-to-br from-pink-500 to-pink-600" },
     { id: "social", label: "Social", icon: Users, color: "bg-gradient-to-br from-teal-500 to-teal-600" },
     { id: "notifications", label: "Alerts", icon: Bell, color: "bg-gradient-to-br from-orange-500 to-orange-600" },
-    { id: "profile", label: "Profile", icon: User, color: "bg-gradient-to-br from-cyan-500 to-cyan-600" },
   ];
 
   const itemGroups = [];
