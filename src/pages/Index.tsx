@@ -1,10 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
 import CalorieTracker from "@/components/CalorieTracker";
@@ -44,29 +40,27 @@ const Index = () => {
     setIsAuthenticated(true);
     localStorage.setItem("fitnessUser", JSON.stringify(userData));
     toast({
-      title: "Welcome to FitForge! 🔥",
-      description: `Welcome ${userData.name || 'back'}! Your fitness journey continues.`,
+      title: "Welcome to FitForge!",
+      description: `Welcome ${userData.name || "back"}! Your fitness journey continues.`,
     });
   };
 
   const handleOnboardingComplete = (userData) => {
-    // Save user with additional auth info
     const completeUserData = {
       ...userData,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
-      loginMethod: 'onboarding'
+      loginMethod: "onboarding",
     };
-    
+
     setUser(completeUserData);
     setIsAuthenticated(true);
     localStorage.setItem("fitnessUser", JSON.stringify(completeUserData));
-    
-    // Also save to users list for future logins
-    const savedUsers = JSON.parse(localStorage.getItem('fitforge_users') || '[]');
+
+    const savedUsers = JSON.parse(localStorage.getItem("fitforge_users") || "[]");
     savedUsers.push(completeUserData);
-    localStorage.setItem('fitforge_users', JSON.stringify(savedUsers));
-    
+    localStorage.setItem("fitforge_users", JSON.stringify(savedUsers));
+
     toast({
       title: "Welcome to FitForge! 🔥",
       description: "Your fitness journey starts now - Let's forge your best self!",
@@ -81,12 +75,10 @@ const Index = () => {
     return <AnimatedSplashScreen onComplete={handleSplashComplete} />;
   }
 
-  // Show auth screen if user is not authenticated
   if (!isAuthenticated) {
     return <Auth onAuthComplete={handleAuthComplete} />;
   }
 
-  // Show onboarding if user doesn't have complete profile data
   if (!user || !user.name || !user.age) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }
@@ -94,21 +86,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
       <div className="container mx-auto px-4 py-6">
-        <header className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/lovable-uploads/b58cc98a-369c-41f7-9039-63696829d8f7.png" 
-              alt="FitForge Logo" 
-              className="h-16 w-auto mr-3"
+        <header className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <img
+              src="/lovable-uploads/b58cc98a-369c-41f7-9039-63696829d8f7.png"
+              alt="FitForge Logo"
+              className="h-10 w-auto"
             />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
+          <h1 className="text-xl font-semibold text-white mb-1">
             Welcome back, {user.name}! 🔥
           </h1>
-          <p className="text-blue-200">Forge your fitness destiny today</p>
+          <p className="text-blue-200 text-sm">Forge your fitness destiny today</p>
         </header>
 
-        {/* Swipeable Menu Grid */}
         <SwipeableMenuGrid activeTab={activeTab} onTabChange={setActiveTab} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
