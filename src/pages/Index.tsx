@@ -19,6 +19,7 @@ import AnimatedSplashScreen from "@/components/AnimatedSplashScreen";
 import Auth from "@/components/Auth";
 import SmartDietPlanner from "@/components/SmartDietPlanner";
 import SwipeableMenuGrid from "@/components/SwipeableMenuGrid";
+import ProfileDropdown from "@/components/ProfileDropdown";
 
 const Index = () => {
   const [user, setUser] = useState(null);
@@ -77,6 +78,16 @@ const Index = () => {
     setUser(updatedUser);
   };
 
+  const handleLogout = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+    localStorage.removeItem("fitnessUser");
+    toast({
+      title: "Logged out successfully",
+      description: "See you next time!",
+    });
+  };
+
   if (showSplash) {
     return <AnimatedSplashScreen onComplete={handleSplashComplete} />;
   }
@@ -94,18 +105,28 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
       <div className="container mx-auto px-4 py-6">
-        <header className="mb-8 text-center">
-          <div className="flex items-center justify-center mb-4">
-            <img 
-              src="/lovable-uploads/b58cc98a-369c-41f7-9039-63696829d8f7.png" 
-              alt="FitForge Logo" 
-              className="h-16 w-auto mr-3"
-            />
+        <header className="mb-8">
+          <div className="flex items-start justify-between">
+            {/* Logo and Welcome Message - Top Left */}
+            <div className="flex flex-col">
+              <div className="flex items-center mb-2">
+                <img 
+                  src="/lovable-uploads/b58cc98a-369c-41f7-9039-63696829d8f7.png" 
+                  alt="FitForge Logo" 
+                  className="h-12 w-auto"
+                />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white mb-1">
+                  Welcome back, {user.name}! 🔥
+                </h1>
+                <p className="text-blue-200">Forge your fitness destiny today</p>
+              </div>
+            </div>
+
+            {/* Profile Dropdown - Top Right */}
+            <ProfileDropdown user={user} onLogout={handleLogout} onProfileClick={() => setActiveTab("profile")} />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Welcome back, {user.name}! 🔥
-          </h1>
-          <p className="text-blue-200">Forge your fitness destiny today</p>
         </header>
 
         {/* Swipeable Menu Grid */}
