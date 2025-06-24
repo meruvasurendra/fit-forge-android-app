@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 
 interface OTPVerificationProps {
   phone: string;
-  onVerify: (otp: string) => void;
+  onVerify: (otp: string) => Promise<void>;
   onBack: () => void;
 }
 
@@ -19,9 +19,11 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
     if (otp.length !== 6) return;
     
     setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    onVerify(otp);
-    setIsLoading(false);
+    try {
+      await onVerify(otp);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -81,9 +83,6 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
               <span className="text-blue-600 cursor-pointer hover:underline">
                 Resend OTP
               </span>
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              For demo purposes, use: <span className="font-mono font-bold">123456</span>
             </p>
           </div>
         </CardContent>
