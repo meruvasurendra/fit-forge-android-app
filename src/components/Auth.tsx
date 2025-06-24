@@ -42,7 +42,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         onAuthComplete({ email });
       } else {
         // Phone login with test-only logic
-        if (!phone || phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+        if ( phone.length !== 10 || !/^\d{10}$/.test(phone)) {
           toast({
             title: "Invalid Phone Number",
             description: "Please enter a valid 10-digit number",
