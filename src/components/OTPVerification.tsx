@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,17 +18,20 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
 
   const handleVerify = async () => {
     if (otp.length !== 6) return;
-    
+
     setIsLoading(true);
     try {
+      if (otp !== "123456") {
+        throw new Error("Invalid OTP");
+      }
+
+      // Simulate successful OTP verification
       await onVerify(otp);
-      // Success toast and navigation will be handled by the parent component
-      // after the auth state changes
     } catch (error) {
       console.error('OTP verification error:', error);
       toast({
         title: "Verification Failed",
-        description: "Please check your OTP and try again",
+        description: "Please enter 123456 to proceed (testing mode)",
         variant: "destructive"
       });
     } finally {
@@ -42,7 +44,7 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
       title: "OTP Resent! 📱",
       description: `New verification code sent to ${phone}`,
     });
-    // You can implement actual resend logic here if needed
+    // Resend logic can be implemented here
   };
 
   return (
