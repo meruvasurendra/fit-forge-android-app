@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import OTPVerification from "./OTPVerification";
 
 interface AuthProps {
@@ -22,9 +24,10 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
 
   const handleLogin = async () => {
     setIsLoading(true);
-
+    
     try {
       if (loginMethod === 'email') {
+        // Email login with password
         if (!email || !password) {
           toast({
             title: "Missing Information",
@@ -33,33 +36,64 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
           });
           return;
         }
-
-        // TODO: Add real email login logic here
-        toast({
-          title: "Login Skipped",
-          description: "Simulated email login (testing mode)",
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
         });
-        onAuthComplete({ email });
-      } else {
-        // Phone login with test-only logic
-        if ( phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              title: "Login Failed",
+              description: "Invalid email or password",
+              variant: "destructive"
+            });
+          } else {
+            toast({
+              title: "Login Error",
+              description: error.message,
+              variant: "destructive"
+            });
+          }
+        } else if (data.user) {
           toast({
-            title: "Invalid Phone Number",
-            description: "Please enter a valid 10-digit number",
+            title: "Welcome back! 🔥",
+            description: "Successfully logged in to FitForge",
+          });
+          // The auth state change will be handled by the Index component
+        }
+      } else {
+        // Phone login with OTP
+        if (!phone) {
+          toast({
+            title: "Missing Information",
+            description: "Please enter your phone number",
             variant: "destructive"
           });
           return;
         }
-
-        // Simulate OTP sent
-        setAuthStep('otp');
-        toast({
-          title: "OTP Sent! 📱",
-          description: `Use code 123456 to log in (test mode)`,
+        
+        const { error } = await supabase.auth.signInWithOtp({
+          phone: phone
         });
+
+        if (error) {
+          toast({
+            title: "OTP Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          // Move to OTP verification
+          setAuthStep('otp');
+          toast({
+            title: "OTP Sent! 📱",
+            description: `Verification code sent to ${phone}`,
+          });
+        }
       }
     } catch (error) {
-      console.error('Login error:', error);
       toast({
         title: "Login Error",
         description: "Something went wrong. Please try again.",
@@ -72,28 +106,82 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
 
   const handleOTPVerification = async (otp: string) => {
     try {
-      if (otp !== "123456") {
-        throw new Error("Invalid OTP");
-      }
-
-      toast({
-        title: "Welcome! 🔥",
-        description: "Successfully logged in (test mode)",
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: phone,
+        token: otp,
+        type: 'sms'
       });
 
-      onAuthComplete({ phone });
+      if (error) {
+        toast({
+          title: "Invalid OTP",
+          description: "Please enter the correct verification code",
+          variant: "destructive"
+        });
+      } else if (data.user) {
+        toast({
+          title: "Welcome! 🔥",
+          description: "Successfully verified and logged in",
+        });
+        // The auth state change will be handled by the Index component
+      }
     } catch (error) {
       toast({
-        title: "Invalid OTP",
-        description: "Please enter 123456 to proceed",
+        title: "Verification Error",
+        description: "Something went wrong. Please try again.",
         variant: "destructive"
       });
     }
   };
 
+  const handleSignUp = async () => {
+    if (loginMethod === 'email') {
+      if (!email || !password) {
+        toast({
+          title: "Missing Information",
+          description: "Please enter both email and password",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: email,
+          password: password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`
+          }
+        });
+
+        if (error) {
+          toast({
+            title: "Sign Up Error",
+            description: error.message,
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Check your email! 📧",
+            description: "We sent you a confirmation link",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Sign Up Error",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   if (authStep === 'otp') {
     return (
-      <OTPVerification
+      <OTPVerification 
         phone={phone}
         onVerify={handleOTPVerification}
         onBack={() => setAuthStep('login')}
@@ -106,9 +194,9 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
       <Card className="w-full max-w-md bg-white/95 backdrop-blur">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <img
-              src="/lovable-uploads/c39fd28d-6214-413d-ab66-7abee848d281.png"
-              alt="FitForge Logo"
+            <img 
+              src="/lovable-uploads/c39fd28d-6214-413d-ab66-7abee848d281.png" 
+              alt="FitForge Logo" 
               className="h-16 w-auto"
             />
           </div>
@@ -121,7 +209,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
               <TabsTrigger value="email">Email</TabsTrigger>
               <TabsTrigger value="phone">Phone</TabsTrigger>
             </TabsList>
-
+            
             <TabsContent value="email" className="space-y-4">
               <div>
                 <Label htmlFor="email">Email Address</Label>
@@ -146,7 +234,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
                 />
               </div>
             </TabsContent>
-
+            
             <TabsContent value="phone" className="space-y-4">
               <div>
                 <Label htmlFor="phone">Phone Number</Label>
@@ -155,23 +243,40 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter 10-digit number"
+                  placeholder="+1 (555) 000-0000"
                   className="mt-2"
                 />
               </div>
               <p className="text-sm text-gray-600">
-                We'll send you a verification code (test: 123456)
+                We'll send you a verification code via SMS
               </p>
             </TabsContent>
           </Tabs>
-
-          <Button
+          
+          <Button 
             onClick={handleLogin}
             disabled={isLoading}
             className="w-full mt-6 bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600"
           >
             {isLoading ? "Signing In..." : loginMethod === 'email' ? "Sign In" : "Send OTP"}
           </Button>
+          
+          {loginMethod === 'email' && (
+            <Button 
+              onClick={handleSignUp}
+              disabled={isLoading}
+              variant="outline"
+              className="w-full mt-2"
+            >
+              {isLoading ? "Signing Up..." : "Sign Up"}
+            </Button>
+          )}
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              {loginMethod === 'email' ? "New to FitForge? Use Sign Up button above" : "Don't have an account? Switch to Email tab"}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
