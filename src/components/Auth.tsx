@@ -67,14 +67,15 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         }
       } else {
         // Phone login with OTP
-        if (!phone) {
+        if (!phone || phone.length !== 10 || !/^\d{10}$/.test(phone)) {
           toast({
-            title: "Missing Information",
-            description: "Please enter your phone number",
+            title: "Invalid Phone Number",
+            description: "Please enter a valid 10-digit number",
             variant: "destructive"
           });
           return;
         }
+
         
         const { error } = await supabase.auth.signInWithOtp({
           phone: phone
