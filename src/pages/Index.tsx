@@ -5,9 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import Onboarding from "@/components/Onboarding";
 import Dashboard from "@/components/Dashboard";
-import CalorieTracker from "@/components/CalorieTracker";
+import AICalorieTracker from "@/components/AICalorieTracker";
 import BodyMetrics from "@/components/BodyMetrics";
 import WorkoutLogger from "@/components/WorkoutLogger";
 import GoalSetting from "@/components/GoalSetting";
@@ -26,62 +27,119 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showSplash, setShowSplash] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [session, setSession] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("fitnessUser");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
-    }
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        if (session?.user) {
+          setUser(session.user);
+          setIsAuthenticated(true);
+          
+          // Sync user profile to our database
+          syncUserProfile(session.user);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        setUser(session.user);
+        setIsAuthenticated(true);
+        syncUserProfile(session.user);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const syncUserProfile = async (authUser) => {
+    try {
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+
+      if (!existingProfile) {
+        // Create new profile
+        await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: authUser.id,
+            name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'User',
+            age: 25,
+            weight: 70,
+            height: 170,
+            fitness_goal: 'general-health',
+            activity_level: 'moderate'
+          });
+      }
+    } catch (error) {
+      console.error('Error syncing user profile:', error);
+    }
+  };
 
   const handleSplashComplete = () => {
     setShowSplash(false);
   };
 
   const handleAuthComplete = (userData) => {
-    setUser(userData);
-    setIsAuthenticated(true);
-    localStorage.setItem("fitnessUser", JSON.stringify(userData));
+    // This will be handled by the auth state change listener
     toast({
       title: "Welcome to FitForge! 🔥",
-      description: `Welcome ${userData.name || 'back'}! Your fitness journey continues.`,
+      description: "Your AI-powered fitness journey begins now!",
     });
   };
 
-  const handleOnboardingComplete = (userData) => {
-    // Save user with additional auth info
-    const completeUserData = {
-      ...userData,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString(),
-      loginMethod: 'onboarding'
-    };
-    
-    setUser(completeUserData);
-    setIsAuthenticated(true);
-    localStorage.setItem("fitnessUser", JSON.stringify(completeUserData));
-    
-    // Also save to users list for future logins
-    const savedUsers = JSON.parse(localStorage.getItem('fitforge_users') || '[]');
-    savedUsers.push(completeUserData);
-    localStorage.setItem('fitforge_users', JSON.stringify(savedUsers));
-    
-    toast({
-      title: "Welcome to FitForge! 🔥",
-      description: "Your fitness journey starts now - Let's forge your best self!",
-    });
+  const handleOnboardingComplete = async (userData) => {
+    try {
+      // Update user profile with onboarding data
+      await supabase
+        .from('user_profiles')
+        .update({
+          name: userData.name,
+          age: userData.age,
+          weight: userData.weight,
+          height: userData.height,
+          fitness_goal: userData.fitnessGoal,
+          activity_level: userData.activityLevel,
+          dietary_preferences: userData.dietaryPreferences || {}
+        })
+        .eq('user_id', user.id);
+
+      // Update local user state
+      setUser({ ...user, ...userData });
+      
+      toast({
+        title: "Profile Setup Complete! 🎉",
+        description: "AI is now personalizing your fitness experience",
+      });
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      toast({
+        title: "Error saving profile",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleUpdateUser = (updatedUser) => {
     setUser(updatedUser);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    localStorage.removeItem("fitnessUser");
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     toast({
       title: "Logged out successfully",
       description: "See you next time!",
@@ -118,9 +176,9 @@ const Index = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-white mb-1">
-                  Welcome back, {user.name}! 🔥
+                  Welcome back, {user.name || user.email?.split('@')[0]}! 🔥
                 </h1>
-                <p className="text-blue-200">Forge your fitness destiny today</p>
+                <p className="text-blue-200">AI-Powered Fitness Journey</p>
               </div>
             </div>
 
@@ -138,7 +196,7 @@ const Index = () => {
           </TabsContent>
 
           <TabsContent value="calories">
-            <CalorieTracker user={user} />
+            <AICalorieTracker user={user} />
           </TabsContent>
 
           <TabsContent value="metrics">

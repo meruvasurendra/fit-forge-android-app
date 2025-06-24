@@ -9,7 +9,156 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      ai_recommendations: {
+        Row: {
+          content: Json
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          recommendation_type: string
+          user_id: string | null
+        }
+        Insert: {
+          content: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          recommendation_type: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: Json
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          recommendation_type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      food_entries: {
+        Row: {
+          ai_analyzed: boolean | null
+          calories: number | null
+          carbs: number | null
+          created_at: string | null
+          date: string | null
+          fats: number | null
+          food_name: string
+          id: string
+          meal_type: string | null
+          protein: number | null
+          user_id: string | null
+        }
+        Insert: {
+          ai_analyzed?: boolean | null
+          calories?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          date?: string | null
+          fats?: number | null
+          food_name: string
+          id?: string
+          meal_type?: string | null
+          protein?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          ai_analyzed?: boolean | null
+          calories?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          date?: string | null
+          fats?: number | null
+          food_name?: string
+          id?: string
+          meal_type?: string | null
+          protein?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_profiles: {
+        Row: {
+          activity_level: string | null
+          age: number | null
+          created_at: string | null
+          dietary_preferences: Json | null
+          fitness_goal: string | null
+          height: number | null
+          id: string
+          name: string | null
+          updated_at: string | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string | null
+          dietary_preferences?: Json | null
+          fitness_goal?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          activity_level?: string | null
+          age?: number | null
+          created_at?: string | null
+          dietary_preferences?: Json | null
+          fitness_goal?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
+      workout_entries: {
+        Row: {
+          calories_burned: number | null
+          created_at: string | null
+          date: string | null
+          duration: number | null
+          exercise_name: string
+          id: string
+          reps: number | null
+          sets: number | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string | null
+          date?: string | null
+          duration?: number | null
+          exercise_name: string
+          id?: string
+          reps?: number | null
+          sets?: number | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string | null
+          date?: string | null
+          duration?: number | null
+          exercise_name?: string
+          id?: string
+          reps?: number | null
+          sets?: number | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

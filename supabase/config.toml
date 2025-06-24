@@ -1,1 +1,11 @@
+
 project_id = "pkeaawukzmbtowvnenpc"
+
+[functions.ai-nutrition-analyzer]
+verify_jwt = true
+
+[functions.ai-workout-planner]
+verify_jwt = true
+
+[functions.ai-diet-planner]
+verify_jwt = true
