@@ -43,6 +43,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         });
 
         if (error) {
+          console.error('Email login error:', error);
           if (error.message.includes('Invalid login credentials')) {
             toast({
               title: "Login Failed",
@@ -57,6 +58,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
             });
           }
         } else if (data.user) {
+          console.log('Email login successful:', data.user);
           toast({
             title: "Welcome back! 🔥",
             description: "Successfully logged in to FitForge",
@@ -79,6 +81,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         });
 
         if (error) {
+          console.error('OTP request error:', error);
           toast({
             title: "OTP Error",
             description: error.message,
@@ -94,6 +97,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         }
       }
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Login Error",
         description: "Something went wrong. Please try again.",
@@ -106,6 +110,8 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
 
   const handleOTPVerification = async (otp: string) => {
     try {
+      console.log('Verifying OTP for phone:', phone, 'with OTP:', otp);
+      
       const { data, error } = await supabase.auth.verifyOtp({
         phone: phone,
         token: otp,
@@ -113,24 +119,30 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
       });
 
       if (error) {
+        console.error('OTP verification error:', error);
         toast({
           title: "Invalid OTP",
           description: "Please enter the correct verification code",
           variant: "destructive"
         });
+        throw error;
       } else if (data.user) {
+        console.log('OTP verification successful:', data.user);
         toast({
           title: "Welcome! 🔥",
           description: "Successfully verified and logged in",
         });
         // The auth state change will be handled by the Index component
+        // No need to manually redirect here as the useEffect in Index will handle it
       }
     } catch (error) {
+      console.error('Verification error:', error);
       toast({
         title: "Verification Error",
         description: "Something went wrong. Please try again.",
         variant: "destructive"
       });
+      throw error;
     }
   };
 
@@ -156,6 +168,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
         });
 
         if (error) {
+          console.error('Sign up error:', error);
           toast({
             title: "Sign Up Error",
             description: error.message,
@@ -168,6 +181,7 @@ const Auth = ({ onAuthComplete }: AuthProps) => {
           });
         }
       } catch (error) {
+        console.error('Sign up error:', error);
         toast({
           title: "Sign Up Error",
           description: "Something went wrong. Please try again.",

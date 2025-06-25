@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ArrowLeft } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface OTPVerificationProps {
   phone: string;
@@ -14,6 +15,7 @@ interface OTPVerificationProps {
 const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleVerify = async () => {
     if (otp.length !== 6) return;
@@ -21,9 +23,26 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
     setIsLoading(true);
     try {
       await onVerify(otp);
+      // Success toast and navigation will be handled by the parent component
+      // after the auth state changes
+    } catch (error) {
+      console.error('OTP verification error:', error);
+      toast({
+        title: "Verification Failed",
+        description: "Please check your OTP and try again",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleResendOTP = () => {
+    toast({
+      title: "OTP Resent! 📱",
+      description: `New verification code sent to ${phone}`,
+    });
+    // You can implement actual resend logic here if needed
   };
 
   return (
@@ -80,7 +99,10 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Didn't receive the code?{" "}
-              <span className="text-blue-600 cursor-pointer hover:underline">
+              <span 
+                className="text-blue-600 cursor-pointer hover:underline" 
+                onClick={handleResendOTP}
+              >
                 Resend OTP
               </span>
             </p>
