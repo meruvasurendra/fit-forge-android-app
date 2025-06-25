@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,12 +31,15 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         if (session?.user) {
           setUser(session.user);
           setIsAuthenticated(true);
+          
+          // Sync user profile to our database
           syncUserProfile(session.user);
         } else {
           setUser(null);
@@ -44,6 +48,7 @@ const Index = () => {
       }
     );
 
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session?.user) {
@@ -58,6 +63,7 @@ const Index = () => {
 
   const syncUserProfile = async (authUser) => {
     try {
+      // Check if profile exists
       const { data: existingProfile } = await supabase
         .from('user_profiles')
         .select('*')
@@ -65,6 +71,7 @@ const Index = () => {
         .single();
 
       if (!existingProfile) {
+        // Create new profile
         await supabase
           .from('user_profiles')
           .insert({
@@ -87,17 +94,16 @@ const Index = () => {
   };
 
   const handleAuthComplete = (userData) => {
+    // This will be handled by the auth state change listener
     toast({
       title: "Welcome to FitForge! 🔥",
       description: "Your AI-powered fitness journey begins now!",
     });
-
-    setUser(userData);
-    setIsAuthenticated(true);
   };
 
   const handleOnboardingComplete = async (userData) => {
     try {
+      // Update user profile with onboarding data
       await supabase
         .from('user_profiles')
         .update({
@@ -111,8 +117,9 @@ const Index = () => {
         })
         .eq('user_id', user.id);
 
+      // Update local user state
       setUser({ ...user, ...userData });
-
+      
       toast({
         title: "Profile Setup Complete! 🎉",
         description: "AI is now personalizing your fitness experience",
@@ -143,10 +150,12 @@ const Index = () => {
     return <AnimatedSplashScreen onComplete={handleSplashComplete} />;
   }
 
+  // Show auth screen if user is not authenticated
   if (!isAuthenticated) {
     return <Auth onAuthComplete={handleAuthComplete} />;
   }
 
+  // Show onboarding if user doesn't have complete profile data
   if (!user || !user.name || !user.age) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
   }
@@ -156,6 +165,7 @@ const Index = () => {
       <div className="container mx-auto px-4 py-6">
         <header className="mb-8">
           <div className="flex items-start justify-between">
+            {/* Logo and Welcome Message - Top Left */}
             <div className="flex flex-col">
               <div className="flex items-center mb-2">
                 <img 
@@ -172,10 +182,12 @@ const Index = () => {
               </div>
             </div>
 
+            {/* Profile Dropdown - Top Right */}
             <ProfileDropdown user={user} onLogout={handleLogout} onProfileClick={() => setActiveTab("profile")} />
           </div>
         </header>
 
+        {/* Swipeable Menu Grid */}
         <SwipeableMenuGrid activeTab={activeTab} onTabChange={setActiveTab} />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
