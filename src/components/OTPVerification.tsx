@@ -1,9 +1,9 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { ArrowLeft } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 interface OTPVerificationProps {
   phone: string;
@@ -14,37 +14,16 @@ interface OTPVerificationProps {
 const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   const handleVerify = async () => {
     if (otp.length !== 6) return;
-
+    
     setIsLoading(true);
     try {
-      if (otp !== "123456") {
-        throw new Error("Invalid OTP");
-      }
-
-      // Simulate successful OTP verification
       await onVerify(otp);
-    } catch (error) {
-      console.error('OTP verification error:', error);
-      toast({
-        title: "Verification Failed",
-        description: "Please enter 123456 to proceed (testing mode)",
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleResendOTP = () => {
-    toast({
-      title: "OTP Resent! 📱",
-      description: `New verification code sent to ${phone}`,
-    });
-    // Resend logic can be implemented here
   };
 
   return (
@@ -101,10 +80,7 @@ const OTPVerification = ({ phone, onVerify, onBack }: OTPVerificationProps) => {
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Didn't receive the code?{" "}
-              <span 
-                className="text-blue-600 cursor-pointer hover:underline" 
-                onClick={handleResendOTP}
-              >
+              <span className="text-blue-600 cursor-pointer hover:underline">
                 Resend OTP
               </span>
             </p>
